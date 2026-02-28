@@ -107,8 +107,6 @@ var lineColor="rgb(255,255,50)"
       }
 
 
-
-
    function makeLineBasic(x1, y1, x2, y2, otherCanvas = null) {
         console.log("MAKE LINE", x1, y1, x2, y2, lineColor);
         let myCanvas = canvas;
@@ -519,47 +517,10 @@ let mouseY = 0;
 		});
 
 	}
-
-
-    function doStuffOnInstancesMutation(mutations) {
-        for (const mutation of mutations) {
-              if ( mutation.removedNodes.length > 0) {
-                  updateTree();
-                  reDrawTree();
-              }
-                    if (mutation.addedNodes.length > 0) {
-                            updateTree();
-                            reDrawTree();
-                        for (const node of mutation.addedNodes) {
-
-
-                              if(node.id!="instance-0" && node.classList.contains("instance") && node.querySelector(".instance-emoji"))
-                                {
-                                 let instance=IC.getInstances().find(x=>x.element==node)
-
-                                   let parentOne=null;
-                                   let parentTwo=null;
-
-                                    { console.log("Not crafted");
-                                      let item=IC.getItems().find(x=>x.text==instance.text) ;
-                                      let recipes=item?.recipes;
-
-                                     window.addEventListener("keydown",async (e)=>{
-                                        let formattedKeyEvent = formatKeyEvent(e);
-                                        console.log("KEY:"+formattedKeyEvent)
-
-                                        let  rect=node.getBoundingClientRect();
-                                         const isInside =
-                                            mouseX >= rect.left &&
-                                            mouseX <= rect.right &&
-                                            mouseY >= rect.top &&
-                                            mouseY <= rect.bottom;
-                                            if(!isInside)
-                                              return;
-
-                                       if(formattedKeyEvent==keybind)
-                                        {
-                                     makeModal(recipes,
+   function helper(recipes,instance,node,rect){
+        let parentOne=null;
+        let parentTwo=null;
+               makeModal(recipes,
                                       async (recipe)=>{
 
                                      console.log("RECIPE:",recipe);
@@ -672,6 +633,60 @@ let mouseY = 0;
 
                                         });
 
+
+   }
+
+    function doStuffOnInstancesMutation(mutations) {
+        for (const mutation of mutations) {
+              if ( mutation.removedNodes.length > 0) {
+                  updateTree();
+                  reDrawTree();
+              }
+                    if (mutation.addedNodes.length > 0) {
+                            updateTree();
+                            reDrawTree();
+                        for (const node of mutation.addedNodes) {
+
+
+                              if(node.id!="instance-0" && node.classList.contains("instance") && node.querySelector(".instance-emoji"))
+                                {
+                                 let instance=IC.getInstances().find(x=>x.element==node)
+
+                                   let parentOne=null;
+                                   let parentTwo=null;
+
+                                    { console.log("Not crafted");
+                                      let item=IC.getItems().find(x=>x.text==instance.text) ;
+                                      let recipes=item?.recipes;
+
+                                     const holdThreshold = 500; // milliseconds
+                                     let holdTimer;
+                                     node.addEventListener("touchstart", () => {
+                                         holdTimer = setTimeout(() => { console.log("Long press detected!"); // your long-press action here
+                                                                         helper(recipes,instance,node);
+                                                                      }, holdThreshold); });
+
+                                     node.addEventListener("touchend", () => {
+                                         clearTimeout(holdTimer); });
+                                     node.addEventListener("touchmove", () => {
+                                         clearTimeout(holdTimer); // cancel if finger moves
+                                     });
+                                     window.addEventListener("keydown",async (e)=>{
+                                        let formattedKeyEvent = formatKeyEvent(e);
+                                        console.log("KEY:"+formattedKeyEvent)
+
+                                        let  rect=node.getBoundingClientRect();
+                                         const isInside =
+                                            mouseX >= rect.left &&
+                                            mouseX <= rect.right &&
+                                            mouseY >= rect.top &&
+                                            mouseY <= rect.bottom;
+                                            if(!isInside)
+                                              return;
+
+                                       if(formattedKeyEvent==keybind)
+                                        {
+                                         helper(recipes,instance,node,rect);
                                         }
 
                                     console.log("Instance:",instance);
