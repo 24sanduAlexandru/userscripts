@@ -222,6 +222,8 @@ let mouseY = 0;
        modal.style.left="50%"
        modal.style.width="600px";
        modal.style.height="500px";
+       modal.style.maxHeight = "80vh";
+       modal.style.maxWidth = "90vw";
        modal.style.overflowY="auto";
        modal.style.transform="translate(-50%, -50%)";
        modal.style.borderRadius="15px";
@@ -245,7 +247,7 @@ let mouseY = 0;
             let parentTwo=IC.getItems()[recipe[1]]
             let recipeDiv=document.createElement("div");
             let recipeSpan=document.createElement("span");
-
+            recipeSpan.style.whiteSpace="nowrap"
                if(parentOne && parentTwo && parentOne.emoji && parentOne.emoji)
                {
              recipeSpan.textContent=parentOne.emoji+" "+parentOne.text+" + "+parentTwo.emoji+" "+parentTwo.text
@@ -325,7 +327,7 @@ let mouseY = 0;
 						displayParents_container.classList.add("modal-tab-wrapper");
 						displayParents_container.setAttribute("data-v-885fff84", "");
 						displayParents_container.classList.add('display_parents_settings_cont');
-						
+
 					}
 
 
@@ -591,7 +593,7 @@ let mouseY = 0;
                                                deleteTreeNode(instance.id);
                                                reDrawTree();
                                             }});
-                                           node.addEventListener('mouseup',function (event)
+                                           node.addEventListener('pointerup',function (event)
                                              { //take sidebar
                                                  let sidebar=document.querySelector("#sidebar");
                                                  let r1=sidebar.getBoundingClientRect();
@@ -606,7 +608,7 @@ let mouseY = 0;
                                               reDrawTree();
                                             ;}
                                             });
-                                            left.element.addEventListener('mouseup', function (event) {
+                                            left.element.addEventListener('pointerup', function (event) {
                                                let sidebar=document.querySelector("#sidebar");
                                                  let r1=sidebar.getBoundingClientRect();
                                                  let r2= left.element.getBoundingClientRect();
@@ -619,7 +621,7 @@ let mouseY = 0;
                                                   deleteTreeNode(right.id);
                                                   reDrawTree();
                                                  }});
-                                            right.element.addEventListener('mouseup', function (event)
+                                            right.element.addEventListener('pointerup', function (event)
                                              { //take sidebar
                                                  let sidebar=document.querySelector("#sidebar");
                                                  let r1=sidebar.getBoundingClientRect();
@@ -654,7 +656,7 @@ let mouseY = 0;
 
                                    let parentOne=null;
                                    let parentTwo=null;
-
+                                   let  rect=node.getBoundingClientRect();
                                     { console.log("Not crafted");
                                       let item=IC.getItems().find(x=>x.text==instance.text) ;
                                       let recipes=item?.recipes;
@@ -663,7 +665,7 @@ let mouseY = 0;
                                      let holdTimer;
                                      node.addEventListener("touchstart", () => {
                                          holdTimer = setTimeout(() => { console.log("Long press detected!"); // your long-press action here
-                                                                         helper(recipes,instance,node);
+                                                                         helper(recipes,instance,node,rect);
                                                                       }, holdThreshold); });
 
                                      node.addEventListener("touchend", () => {
@@ -675,7 +677,7 @@ let mouseY = 0;
                                         let formattedKeyEvent = formatKeyEvent(e);
                                         console.log("KEY:"+formattedKeyEvent)
 
-                                        let  rect=node.getBoundingClientRect();
+
                                          const isInside =
                                             mouseX >= rect.left &&
                                             mouseX <= rect.right &&
@@ -716,8 +718,17 @@ let mouseY = 0;
                                   updateTree();
                                   reDrawTree();
                             },10);
-         
+
         });
+       window.addEventListener("touchmove", (event) => {
+                   console.log("WHEEL");
+                                  updateTree();
+                                  reDrawTree();
+             setTimeout(()=>{console.log("AFTER WHEEL");
+                                  updateTree();
+                                  reDrawTree();
+                            },10);
+       });
       let redraw=false;
     window.addEventListener("mousedown", (event) => {
          if (event.button === 1) {
