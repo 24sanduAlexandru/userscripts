@@ -11,7 +11,9 @@
 
 (function() {
           'use strict';
-
+ function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
        function formatKeyEvent(e) {
         let shift = e.shiftKey ? 'Shift' : '';
         let meta = e.metaKey ? 'Meta' : '';
@@ -22,6 +24,15 @@
 
         return arr.filter((word) => word.length > 0).join(' + ');
     }
+     function extractTextWithoutEmoji(el) {
+    // Remove the emoji span
+    const clone = el.cloneNode(true);
+    const emoji = clone.querySelector("span");
+    if (emoji) emoji.remove();
+
+    // Trim leftover whitespace
+    return clone.textContent.trim();
+}
  function makeModal(recipes,item, action) {
     let modal = document.querySelector(".deleteRecipesModal");
 
@@ -118,7 +129,7 @@
 
                                               },{ passive: false, capture: true });
     // Populate recipes
-
+    if(recipes)
     for (let recipe of recipes) {
         let parentOne = IC.getItems()[recipe[0]];
         let parentTwo = IC.getItems()[recipe[1]];
@@ -308,6 +319,7 @@ let mouseY = 0;
                               if(node.id!="instance-0" && node.classList.contains("instance") && node.querySelector(".instance-emoji"))
                                 {
                                  let instance=IC.getInstances().find(x=>x.element==node)
+                                  let item=IC.getItems().find(x=>x.text==instance.text) ;
                                    window.addEventListener("keydown",async (e)=>{
                                         let formattedKeyEvent = formatKeyEvent(e);
                                         console.log("KEY:"+formattedKeyEvent)
@@ -321,7 +333,6 @@ let mouseY = 0;
                                             if(!isInside)
                                               return;
 
-                                      let item=IC.getItems().find(x=>x.text==instance.text) ;
                                       let recipes=item?.recipes;
                                        if(formattedKeyEvent==keybind)
                                         {
@@ -338,6 +349,42 @@ let mouseY = 0;
             }
         }
     let keybind=""
+    //item observer:
+          function doStuffOnItemsMutation(mutations) {
+        let itemsDivs=document.querySelectorAll(".item:not([deleteRecipeMarked])");
+           let itemsDivsArray=Array.from(itemsDivs);
+                        for (const node of itemsDivsArray) {
+                                node.setAttribute("deleteRecipeMarked","");
+                                    let text=extractTextWithoutEmoji(node)
+                                   let item=IC.getItems().find(x=>x.text==text) ;
+                                   window.addEventListener("keydown",async (e)=>{
+                                        let formattedKeyEvent = formatKeyEvent(e);
+                                      //  console.log("KEY:"+formattedKeyEvent)
+                                        let  rect=node.getBoundingClientRect();
+
+                                         const isInside =
+                                            mouseX >= rect.left &&
+                                            mouseX <= rect.right &&
+                                            mouseY >= rect.top &&
+                                            mouseY <= rect.bottom;
+                                            if(!isInside)
+                                              return;
+
+
+                                      let recipes=item?.recipes;
+                                       if(formattedKeyEvent==keybind)
+                                        {
+                                        makeModal(recipes,item,(delete_recipes)=>{
+                                           createDeleteWarning(async ()=>{
+                                             deleteRecipe(delete_recipes,item);
+                                           })
+                                        });
+                                        }
+                                   });
+
+                    }
+          }
+
 	function set_up_settings() {
 
 		let menu = document.querySelector(".menu");
@@ -503,6 +550,59 @@ window.addEventListener("load",async ()=>{
                 instanceObserver.observe(document.getElementById("instances"), {
                     childList: true,
                     subtree  : true,
+
+
+                });
+        let itemPromise=new Promise(async (r,e)=>{
+          let itemsDivs=document.querySelectorAll(".item");
+           let itemsDivsArray=Array.from(itemsDivs);
+            while(itemsDivsArray.length<1)
+            {itemsDivs=document.querySelectorAll(".item");
+             itemsDivsArray=Array.from(itemsDivs);
+             await sleep(100);
+            }
+               r();
+            for(let node of itemsDivsArray){
+                node.setAttribute("deleteRecipeMarked","");
+                let text=extractTextWithoutEmoji(node)
+                                   let item=IC.getItems().find(x=>x.text==text) ;
+                                   window.addEventListener("keydown",async (e)=>{
+                                        let formattedKeyEvent = formatKeyEvent(e);
+                                        console.log("KEY:"+formattedKeyEvent)
+                                        let  rect=node.getBoundingClientRect();
+
+                                         const isInside =
+                                            mouseX >= rect.left &&
+                                            mouseX <= rect.right &&
+                                            mouseY >= rect.top &&
+                                            mouseY <= rect.bottom;
+                                            if(!isInside)
+                                              return;
+
+
+                                      let recipes=item?.recipes;
+                                       if(formattedKeyEvent==keybind)
+                                        {
+                                        makeModal(recipes,item,(delete_recipes)=>{
+                                           createDeleteWarning(async ()=>{
+                                             deleteRecipe(delete_recipes,item);
+                                           })
+                                        });
+                                        }
+                                   });
+            }
+
+        });
+
+          const itemObserver = new MutationObserver((mutations) => {
+                    doStuffOnItemsMutation(mutations);
+              });
+      let itemsDiv=document.querySelector(".items-inner");
+      console.log("ITEM-DIV",itemsDiv);
+               itemObserver.observe(itemsDiv, {
+                    childList: true,
+                    subtree  : true,
+                    atributes: true
 
                 });
 });
