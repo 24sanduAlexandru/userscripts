@@ -125,12 +125,14 @@
 
         if (parentOne && parentTwo && parentOne.emoji && parentTwo.emoji) {
             let recipeDiv = document.createElement("div");
+
             recipeDivs.push([recipeDiv,recipe]);
             recipeDiv.style.padding = "8px";
             recipeDiv.style.cursor = "pointer";
             recipeDiv.style.borderRadius = "8px";
 
             let recipeSpan = document.createElement("span");
+            recipeSpan.classList.add("recipe-span");
             recipeSpan.style.whiteSpace = "nowrap";
             let deleteInput=document.createElement("input");
             deleteInput.style.opacity="1";
@@ -140,26 +142,44 @@
             deleteInput.style.height="15px";
             recipeSpan.style.alignItems="center";
             deleteInput.style.marginRight="20px";
+            let wrapperSpan=document.createElement("span");
+            wrapperSpan.style.display="inline-flex";
+            wrapperSpan.appendChild(deleteInput);
+            wrapperSpan.appendChild(recipeSpan);
             recipeSpan.textContent =
                 parentOne.emoji + " " + parentOne.text +
                 " + " +
                 parentTwo.emoji + " " + parentTwo.text;
-            recipeSpan.insertBefore(deleteInput, recipeSpan.firstChild);
-            recipeDiv.appendChild(recipeSpan);
 
+              if(parentOne.text==item.text || parentOne.text==item.text)
+            { recipeSpan.style.opacity="0.3";
+            }
+            else
+            { recipeSpan.style.opacity = "1";
+            }
+            recipeDiv.appendChild(wrapperSpan);
+            deleteInput.style.opacity="1";
             recipeDiv.addEventListener("click", () => {
               //  modal.style.display = "none";
                 //action(recipe);
             });
 
             recipeDiv.addEventListener("mouseover", () => {
+                let span=recipeDiv.querySelector("span.recipe-span")
+                if(span.style.opacity>"0.3")
+                {
                 recipeDiv.style.opacity = "0.5";
                 recipeDiv.style.background = "var(--instance-bg-hover)";
+                }
             });
 
             recipeDiv.addEventListener("mouseout", () => {
+                let span=recipeDiv.querySelector("span.recipe-span")
+                 if(span.style.opacity>"0.3")
+                 {
                 recipeDiv.style.opacity = "1";
                 recipeDiv.style.background = "transparent";
+                 }
             });
 
             content.appendChild(recipeDiv);
