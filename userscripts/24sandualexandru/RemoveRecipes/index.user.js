@@ -151,7 +151,7 @@
                 " + " +
                 parentTwo.emoji + " " + parentTwo.text;
 
-              if(parentOne.text==item.text || parentOne.text==item.text)
+              if(parentOne.text==item.text || parentTwo.text==item.text)
             { recipeSpan.style.opacity="0.3";
             }
             else
